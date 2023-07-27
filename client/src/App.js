@@ -7,12 +7,14 @@ const SOCKET_SERVER_URL = 'http://localhost:3001';
 const SOCKET_EVENT = {
   SEND_MESSAGE: 'send_message',
   RECEIVE_MESSAGE: 'receive_message',
+  JOIN_ROOM: 'join_room',
 };
 
 const socket = io.connect(SOCKET_SERVER_URL);
 
 function App() {
-  const [value, setValue] = useState('');
+  const [roomValue, setRoomValue] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [receivedMsg, setReceivedMsg] = useState('');
 
   useEffect(() => {
@@ -21,24 +23,45 @@ function App() {
     });
   }, []);
 
+  const handleChangeRoom = (e) => {
+    setRoomValue(e.target.value);
+  };
+
+  const handleJoinRoom = () => {
+    socket.emit(SOCKET_EVENT.SEND_MESSAGE, roomValue);
+
+    setInputValue('');
+  };
+
   const handleInputChange = (e) => {
-    setValue(e.target.value);
+    setInputValue(e.target.value);
   };
 
   const handleSendMessage = () => {
-    socket.emit(SOCKET_EVENT.SEND_MESSAGE, { msg: value });
+    socket.emit(SOCKET_EVENT.SEND_MESSAGE, { msg: inputValue });
 
-    setValue('');
+    setInputValue('');
   };
 
   return (
     <div className="App">
-      <input
-        value={value}
-        onChange={handleInputChange}
-        placeholder="Type message"
-      />
-      <button onClick={handleSendMessage}>Send message</button>
+      <div>
+        <input
+          value={roomValue}
+          onChange={handleChangeRoom}
+          placeholder="Join room..."
+        />
+        <button onClick={handleJoinRoom}>Join Room</button>
+      </div>
+
+      <div>
+        <input
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Type message..."
+        />
+        <button onClick={handleSendMessage}>Send message</button>
+      </div>
       {receivedMsg && <p>Received message: {receivedMsg}</p>}
     </div>
   );
